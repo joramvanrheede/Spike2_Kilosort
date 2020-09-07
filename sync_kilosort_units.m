@@ -43,9 +43,39 @@ cluster_ids     = sp.clu;   % cluster ID (number) for each spike time, N spikes 
 cluster_numbers = sp.cids;  % IDs of all clusters (1 * N clusters vector of ascending integers, starting at 0, with potential gaps for merged clusters)
 cluster_groups  = sp.cgs;   % Group corresponding to each cluster_number, 1 * N clusters vector --> 1 = MUA, 2 = 'Good' unit
 
-% CortexLab/spikes function to get more info about the clusters using the loadKSdir data
-% We need spikeDepths, a N spikes * 1 vector, to determine the depth of the clusters
-[spikeAmps, spikeDepths, templateDepths, tempAmps, tempsUnW, templateDuration, waveforms] = templatePositionsAmplitudes(sp.temps, sp.winv, sp.ycoords, sp.spikeTemplates, sp.tempScalingAmps);
+% OBSOLETE:
+% % CortexLab/spikes function to get more info about the clusters using the loadKSdir data
+% % We need spikeDepths, a N spikes * 1 vector, to determine the depth of the clusters
+% [spikeAmps, spikeDepths, templateDepths, tempAmps, tempsUnW, templateDuration, waveforms] = templatePositionsAmplitudes(sp.temps, sp.winv, sp.ycoords, sp.spikeTemplates, sp.tempScalingAmps);
+% 
+
+%% The following code is taken / adapted from CortexLab/spikes function templatePositionsAmplitudes;
+% modified to get horizontal (x) positions of units / templates as well; taken out of original function to remove dependency on Cortexlab/spikes
+
+% unwhiten all the templates
+tempsUnW = zeros(size(sp.temps));
+for t = 1:size(sp.temps,1)
+    tempsUnW(t,:,:) = squeeze(sp.temps(t,:,:))*sp.winv;
+end
+
+% The amplitude on each channel is the positive peak minus the negative
+tempChanAmps = squeeze(max(tempsUnW,[],2))-squeeze(min(tempsUnW,[],2));
+
+% The template amplitude is the amplitude of its largest channel (but see
+% below for true tempAmps)
+tempAmpsUnscaled = max(tempChanAmps,[],2);
+
+% need to zero-out the potentially-many low values on distant channels ...
+threshVals = tempAmpsUnscaled*0.3; % Why 0.3?
+tempChanAmps(bsxfun(@lt, tempChanAmps, threshVals)) = 0;
+
+% ... in order to compute the depth as a center of mass
+templateDepths  = sum(bsxfun(@times,tempChanAmps,sp.ycoords'),2)./sum(tempChanAmps,2);
+templateXpos    = sum(bsxfun(@times,tempChanAmps,sp.xcoords'),2)./sum(tempChanAmps,2);
+
+% Each spike's depth is the depth of its template
+spikeDepths = templateDepths(sp.spikeTemplates+1);
+spikeXpos   = templateXpos(sp.spikeTemplates+1);
 
 %% Extract mean spike waveforms here
 
@@ -66,6 +96,7 @@ mean_unit_waveforms         = waveform_data.waveFormsMean;
 
 % Get depth of cluster by identifying the unique cluster / depth pairs
 cluster_depths  = unique([cluster_ids, spikeDepths],'rows');
+cluster_xpos    = unique([cluster_ids, spikeXpos],'rows');
 
 % boolean for selecting units
 is_unit         = cluster_groups == 2;
@@ -73,13 +104,17 @@ is_unit         = cluster_groups == 2;
 % get cluster numbers and depths for confirmed 'Good' units only
 unit_clusters   = cluster_numbers(is_unit);
 unit_depths     = cluster_depths(is_unit,2);
+unit_xpos       = cluster_xpos(is_unit,2);
+
 unit_waveforms  = mean_unit_waveforms(is_unit,:,:);
 
+unit_coords                 = [unit_xpos, unit_depths]; % put x-y coordinates together so they can be sorted by xpos then ypos
+
 % Sort by depth, from superficial to deep (this will be the order in which units are added to the sorted_ephys_data struct)
-[sort_depths, depth_order]  = sort(unit_depths);
+[sort_coords, coord_order]  = sortrows(unit_coords);
 
 % Sort unit waveforms according to the depth order
-unit_waveforms              = unit_waveforms(depth_order,:,:); 
+unit_waveforms              = unit_waveforms(coord_order,:,:); 
 
 % Make boolean to select only spikes that came from confirmed 'Good' units
 is_unit_spike   = ismember(cluster_ids,unit_clusters);
@@ -113,7 +148,7 @@ for a = 1:length(sorted_ephys_data)
     
     for c = 1:length(sorted_ephys_data(a).trial_starts)
         for d = 1:n_clusters
-            this_cluster        = uniq_clusters(depth_order(d));
+            this_cluster        = uniq_clusters(coord_order(d));
             q_cluster           = cluster_ids == this_cluster;
             
             % Make relative to Kilosort concatenated data time, not openephys recording time stamp
@@ -134,8 +169,9 @@ for a = 1:length(sorted_ephys_data)
     % set empty values to NaN instead of 0
     sorted_ephys_data(a).spikes(sorted_ephys_data(a).spikes == 0) = NaN;
     
-    % Add unit depth information
-    sorted_ephys_data(a).unit_depths        = sort_depths;
+    % Add unit position information
+    sorted_ephys_data(a).unit_depths        = sort_coords(:,2);
+    sorted_ephys_data(a).unit_xpos          = sort_coords(:,1);
     
     % Add waveform information too
     sorted_ephys_data(a).unit_waveforms     = unit_waveforms;

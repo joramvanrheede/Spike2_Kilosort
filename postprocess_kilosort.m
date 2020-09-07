@@ -39,11 +39,13 @@ synched_sorted_data       	= rmfield(synched_sorted_data,{'spikes', 'unit_depths
 % distribute cortical data to appropriately named fields in shared / merged data structure
 [synched_sorted_data(:).cortex_spikes]              = deal(cortical_kilosort_data.spikes);
 [synched_sorted_data(:).cortex_unit_depths]         = deal(cortical_kilosort_data.unit_depths);
+[synched_sorted_data(:).cortex_unit_xpos]           = deal(cortical_kilosort_data.unit_xpos);
 [synched_sorted_data(:).cortex_unit_waveforms]      = deal(cortical_kilosort_data.unit_waveforms);
 
 % distribute thalamic data to appropriately named fields in shared / merged data structure
 [synched_sorted_data(:).thalamus_spikes]         	= deal(thalamic_kilosort_data.spikes);
 [synched_sorted_data(:).thalamus_unit_depths]    	= deal(thalamic_kilosort_data.unit_depths);
+[synched_sorted_data(:).thalamus_unit_xpos]         = deal(thalamic_kilosort_data.unit_xpos);
 [synched_sorted_data(:).thalamus_unit_waveforms] 	= deal(thalamic_kilosort_data.unit_waveforms);
 
 % Save synched sorted data
