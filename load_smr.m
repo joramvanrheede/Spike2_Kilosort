@@ -57,6 +57,9 @@ target_chans_B          = 1:32;
 LFP_filt_band           = [0.5 300]; % Passband for local field potential
 LFP_downsample_factor   = 20; % Resample filtered signal for this frequency for LFP
 
+% Hardcoded spike detection parameters
+spike_filt_band         = [500 5000]; % Passband for spike detection
+spike_thresh            = 5; % Threshold for spike detection in robust standard deviation estimates
 
 % if do_CAR is not specified, default to true (= do Common Average Referencing)
 if nargin < 2
@@ -265,17 +268,42 @@ else
     
 end
 
+% Generate sampling frequency from ephys_sample_interval obtained from .smr file
+ephys_sample_freq   = 1/ephys_sample_interval;
+
+%% Spikes: Filter signal and extract spike times
+
+disp([num2str(toc) 's: Filtering signal and detecting spikes'])
+
+spike_traces_A          = filter_ephys_signal(chan_data_A,spike_filt_band, ephys_sample_freq);
+spike_traces_B          = filter_ephys_signal(chan_data_B,spike_filt_band, ephys_sample_freq);
+
+% Detect spikes for all channels, headstage A
+spikes_A = [];
+for i = 1:size(spike_traces_A,1)
+    channel_spike_times     = detect_spikes(spike_traces_A(i,:),spike_thresh,ephys_time_stamps);
+    spikes_A(i,1:length(channel_spike_times))   = channel_spike_times;
+end
+
+% Detect spikes for all channels, headstage B
+for i = 1:size(spike_traces_B,1)
+    channel_spike_times     = detect_spikes(spike_traces_B(i,:),spike_thresh,ephys_time_stamps);
+    spikes_B(i,1:length(channel_spike_times))   = channel_spike_times;
+end
+
+% Unequal numbers of spikes mean that spikes_A and spikes_B are padded with
+% 0s, change these to NaNs instead so we don't count them as spike times
+spikes_A(spikes_A == 0) = NaN;
+spikes_B(spikes_B == 0) = NaN;
+
 
 %% LFP: Filter and resample data for storing LFP traces
 
 disp([num2str(toc) 's: Filtering and resampling LFP'])
 
-% Generate sampling frequency from ephys_sample_interval obtained from .smr file
-ephys_sample_freq   = 1/ephys_sample_interval;
-
 % Bandpass filter ephys data to get LFP
-LFP_data_A          = filter_for_LFP(chan_data_A,LFP_filt_band, ephys_sample_freq);
-LFP_data_B          = filter_for_LFP(chan_data_B,LFP_filt_band, ephys_sample_freq);
+LFP_data_A          = filter_ephys_signal(chan_data_A,LFP_filt_band, ephys_sample_freq);
+LFP_data_B          = filter_ephys_signal(chan_data_B,LFP_filt_band, ephys_sample_freq);
 
 % Downsample LFP data using simple indexing, and obtain relevant timestamps
 LFP_data_A          = LFP_data_A(:,1:LFP_downsample_factor:end);
@@ -312,6 +340,7 @@ smr_contents.cortex.data              	= chan_data_A;
 smr_contents.cortex.time_stamps      	= ephys_time_stamps;
 smr_contents.cortex.units             	= ephys_units;
 smr_contents.cortex.scale            	= ephys_scale;
+smr_contents.cortex.spikes              = spikes_A;
 smr_contents.cortex.LFP                	= LFP_data_A;
 smr_contents.cortex.LFP_time_stamps   	= LFP_time_stamps;
 smr_contents.cortex.rec_length          = rec_length;
@@ -322,6 +351,7 @@ smr_contents.thalamus.data            	= chan_data_B;
 smr_contents.thalamus.time_stamps     	= ephys_time_stamps;
 smr_contents.thalamus.units            	= ephys_units;
 smr_contents.thalamus.scale           	= ephys_scale;
+smr_contents.thalamus.spikes            = spikes_B;
 smr_contents.thalamus.LFP           	= LFP_data_B;
 smr_contents.thalamus.LFP_time_stamps   = LFP_time_stamps;
 smr_contents.thalamus.rec_length      	= rec_length;
