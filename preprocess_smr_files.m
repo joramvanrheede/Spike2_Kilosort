@@ -25,7 +25,7 @@ thalamus_file_name  = '/Users/Joram/Data/Sharott/Kilosort_binary/thalamus_binary
 
 % file names for intermediate smr data file and experiment sync data
 smr_data_save_name  = [cd filesep 'saved_smr_data'];
-sync_data_file_name = [cd filesep 'experiment_sync_data'];
+sync_data_file_name = '/Users/Joram/Data/Sharott/Kilosort_binary/experiment_sync_data.mat';
 
 %% Channelmaps from Naomi's notes:
 cortex_channel_map      = [ 41, 34, 44, 42, 40, 43, 45, 35; ...
@@ -394,15 +394,20 @@ for i = 1:length(smr)
     sync_data(i).channel_y_pos          = channel_y_pos(:);
     sync_data(i).channel_shank_nr       = channel_shank_nr(:);
     
-    %% Distribute LFP traces and piezo traces across trials
+    %% Distribute LFP traces and spikes across trials
     
     % apply channelmap here to re-order channels:
+    cortex_all_spikes     	= smr(i).cortex.spikes(cortex_channel_map(:),:);
+    thalamus_all_spikes   	= smr(i).thalamus.spikes(cortex_channel_map(:),:);
+    
     cortex_LFP_trace        = smr(i).cortex.LFP(cortex_channel_map(:),:);
     thalamus_LFP_trace      = smr(i).cortex.LFP(thalamus_channel_map(:),:);
     LFP_time_stamps         = smr(i).cortex.LFP_time_stamps;
     
     cortex_LFP      = [];
     thalamus_LFP    = [];
+    cortex_spikes   = [];
+    thalamus_spikes = [];
     for j = 1:length(trial_starts)
         this_trial_start    = trial_starts(j);
         this_trial_end      = trial_ends(j);
@@ -415,7 +420,26 @@ for i = 1:length(smr)
         cortex_LFP(:,j,1:n_samps)   = cortex_LFP_trace(:,q_LFP);
         thalamus_LFP(:,j,1:n_samps) = thalamus_LFP_trace(:,q_LFP);
         
+        % Distribute cortical spikes over trials
+        for k = 1:length(cortex_channel_map(:))
+            chan_trial_spikes       = cortex_all_spikes(k,:);
+            q_trial_spikes          = (chan_trial_spikes >= this_trial_start) & (chan_trial_spikes <= this_trial_end);
+            cortex_spikes(k,j,1:sum(q_trial_spikes))    = chan_trial_spikes(q_trial_spikes) - this_trial_start;
+        end
+        
+        % Distribute thalamic spikes over trials
+        for k = 1:length(thalamus_channel_map(:))
+            chan_trial_spikes       = thalamus_all_spikes(k,:);
+            q_trial_spikes          = (chan_trial_spikes >= this_trial_start) & (chan_trial_spikes <= this_trial_end);
+            thalamus_spikes(k,j,1:sum(q_trial_spikes))  = chan_trial_spikes(q_trial_spikes) - this_trial_start;
+        end
+        
+        cortex_spikes(cortex_spikes == 0)       = NaN;
+        thalamus_spikes(thalamus_spikes == 0)   = NaN;
     end
+    
+    sync_data(i).cortex_spikes          = cortex_spikes;
+    sync_data(i).thalamus_spikes        = thalamus_spikes;
     
 	sync_data(i).cortex_LFP             = cortex_LFP;
     sync_data(i).thalamus_LFP           = thalamus_LFP;
