@@ -27,6 +27,8 @@ thalamus_file_name  = '/Users/Joram/Data/Sharott/Kilosort_binary/thalamus_binary
 smr_data_save_name  = [cd filesep 'saved_smr_data'];
 sync_data_file_name = '/Users/Joram/Data/Sharott/Kilosort_binary/experiment_sync_data.mat';
 
+spike_bin_width     = 0.01; % 10ms spike bin width
+
 %% Channelmaps from Naomi's notes:
 cortex_channel_map      = [ 41, 34, 44, 42, 40, 43, 45, 35; ...
                             37, 47, 36, 38, 33, 46, 32, 39; ...
@@ -362,6 +364,8 @@ for i = 1:length(smr)
     sync_data(i).trial_starts        	= trial_starts;
     sync_data(i).trial_ends          	= trial_ends;
 
+    sync_data(i).trial_length           = median(trial_ends - trial_starts);
+    
     % Not sure if we need the individual laser onsets?
 %     sync_data(i).laser478_onsets    	= laser478_onsets;
 %     sync_data(i).laser478_burst_onsets  = laser478_burst_onsets;
@@ -438,11 +442,14 @@ for i = 1:length(smr)
         thalamus_spikes(thalamus_spikes == 0)   = NaN;
     end
     
-    sync_data(i).cortex_spikes          = cortex_spikes;
-    sync_data(i).thalamus_spikes        = thalamus_spikes;
+    sync_data(i).cortex_multi_spikes            = cortex_spikes;
+    sync_data(i).cortex_binned_multi_spikes     = bin_spikes(cortex_spikes, spike_bin_width, sync_data(i).trial_length);
     
-	sync_data(i).cortex_LFP             = cortex_LFP;
-    sync_data(i).thalamus_LFP           = thalamus_LFP;
+    sync_data(i).thalamus_multi_spikes          = thalamus_spikes;
+    sync_data(i).thalamus_binned_multi_spikes   = bin_spikes(thalamus_spikes, spike_bin_width, sync_data(i).trial_length);
+
+	sync_data(i).cortex_LFP                     = cortex_LFP;
+    sync_data(i).thalamus_LFP                   = thalamus_LFP;
     
 end
 
