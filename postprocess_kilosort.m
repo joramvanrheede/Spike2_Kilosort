@@ -48,6 +48,11 @@ synched_sorted_data       	= rmfield(synched_sorted_data,{'spikes', 'unit_depths
 [synched_sorted_data(:).thalamus_unit_xpos]         = deal(thalamic_kilosort_data.unit_xpos);
 [synched_sorted_data(:).thalamus_unit_waveforms] 	= deal(thalamic_kilosort_data.unit_waveforms);
 
+for a = 1:length(synched_sorted_data)
+    synched_sorted_data(a).cortex_binned_spikes     = bin_spikes(synched_sorted_data(a).cortex_spikes,bin_size,synched_sorted_data(a).trial_length);
+    synched_sorted_data(a).thalamus_binned_spikes 	= bin_spikes(synched_sorted_data(a).thalamus_spikes,bin_size,synched_sorted_data(a).trial_length);
+end
+
 % Save synched sorted data
 disp('Saving synched & sorted data...')
 save(sorted_data_save_name, 'synched_sorted_data')
