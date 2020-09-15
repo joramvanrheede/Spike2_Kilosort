@@ -1,18 +1,20 @@
 % POSTPROCESS_KILOSORT:
 % Run this script after you have run preprocess_smr_files and after you have 
 % run Kilosort to link the sorted spikes to protocols and align them to trials.
+function postprocess_kilosort(kilosort_folder, sorted_data_save_name)
+% function postprocess_kilosort(kilosort_folder, sorted_data_save_name)
 
-%% User set variables:
+% A bunch of hardcoded defaults:
 
-% Filename to save the synched & sorted data
-sorted_data_save_name       = '/Users/Joram/Data/Sharott/Synched/synched_sorted_data.mat';
+% Add kilosort folder path to sorted_data_save_name
+sorted_data_save_name       = [kilosort_folder filesep sorted_data_save_name];
 
 % Kilosort folder for the cortical data, and binary data file name (.dat)
-cortex_kilosort_folder      = '/Users/Joram/Data/Sharott/Kilosort_binary/Cortex';
+cortex_kilosort_folder      = [kilosort_folder filesep 'cortex'];
 cortex_file_name            = 'cortex_binary.dat';
 
 % Kilosort folder for the thalamic data, and binary data file name (.dat)
-thalamus_kilosort_folder  	= '/Users/Joram/Data/Sharott/Kilosort_binary/Thalamus';
+thalamus_kilosort_folder  	= [kilosort_folder filesep 'thalamus'];
 thalamus_file_name         	= 'thalamus_binary.dat';
 
 % File name of sync_data saved file from preprocess_smr_files
