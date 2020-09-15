@@ -1,31 +1,28 @@
-% preprpcess_smr_files
+function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
+% preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
 
-%%
+% file names for Kilosort-compatible binary files and experiment sync data
 
-% A cell with the filenames of the SMR files to be added.
-% IMPORTANT - these files need to be in the order they were recorded in, as they will be concatenated in this order
-smr_file_list       = { '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 baseline_start.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 20mW_ChR2_5s.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 30mW_ArchT_7s.smr' ...
-                      	'/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 30mW_ArchT_7s 20mW_ChR2_5s.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 20mW_ChR2_25Hz.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 20mW_ChR2_60Hz.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 30mW_ArchT_7s 20mW_ChR2_25Hz.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 30mW_ArchT_7s 20mW_ChR2_60Hz.smr' ...
-                        '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127/NB151 200127 baseline_end.smr' ...
-                        };
+cortex_dir          = [target_dir filesep 'cortex'];
+thalamus_dir        = [target_dir filesep 'thalamus'];
 
+if ~isdir(cortex_dir)
+    mkdir(cortex_dir)
+end
+if ~isdir(thalamus_dir)
+    mkdir(thalamus_dir)
+end
+
+cortex_file_name    = [cortex_dir filesep 'cortex_binary.dat'];
+thalamus_file_name  = [thalamus_dir filesep 'thalamus_binary.dat'];
+sync_data_file_name = [target_dir filesep 'experiment_sync_data.mat'];
+
+% Defaults   
 do_CAR              = true;
-
-q_reload            = false;
-
-% file names for Kilosort-compatible binary files
-cortex_file_name    = '/Users/Joram/Data/Sharott/Kilosort_binary/cortex_binary.dat';
-thalamus_file_name  = '/Users/Joram/Data/Sharott/Kilosort_binary/thalamus_binary.dat';
+q_reload            = true;
 
 % file names for intermediate smr data file and experiment sync data
-smr_data_save_name  = [cd filesep 'saved_smr_data'];
-sync_data_file_name = '/Users/Joram/Data/Sharott/Kilosort_binary/experiment_sync_data.mat';
+smr_data_save_name  = [target_dir filesep 'saved_smr_data'];
 
 spike_bin_width     = 0.01; % 10ms spike bin width
 
@@ -73,7 +70,7 @@ if q_reload
     for i = 1:length(smr_file_list)
         
         % Load .smr file data
-        smr_output  = load_smr(smr_file_list{i},do_CAR);
+        smr_output  = load_smr([smr_data_folder filesep smr_file_list{i}],do_CAR);
         
         % Write cortical file binary for Kilosort
         success = write_binary(cortex_file_name, smr_output.cortex.data, append_mode);
@@ -91,6 +88,7 @@ if q_reload
         
         smr_output.concat_rec_start = rec_start;
         smr_output.concat_rec_end 	= rec_end;
+        smr_output.file_name        = smr_file_list{i};
         
         previous_rec_time           = rec_end;
         
@@ -109,9 +107,9 @@ else
     % If variable is not in memory already, try to load it using smr_data_save_name 
     if ~exist('smr','var')
         try
-            load(smr_data_save_name)
+            load([target_dir filesep smr_data_save_name])
         catch
-            error(['Saved SMR data file:' smr_data_save_name ' not found'])
+            error(['Saved SMR data file:' target_dir filesep smr_data_save_name ' not found'])
         end
     end
 end
@@ -353,6 +351,7 @@ for i = 1:length(smr)
     end
     
     % Protocol name and title
+    sync_data(i).file_name              = smr(i).file_name;
     sync_data(i).protocol_code       	= protocol_code;
     sync_data(i).protocol_description   = protocol_description;
     
