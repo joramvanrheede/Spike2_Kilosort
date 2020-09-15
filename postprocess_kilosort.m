@@ -22,6 +22,9 @@ sync_file_name              = '/Users/Joram/Data/Sharott/Kilosort_binary/experim
 % this by actual sample rate from smr file to get the timing right:
 kilosort_sample_rate        = 20000; % 20000 - unlikely to change
 
+% Bin size for binning the spike responses
+bin_size                    = 0.01;
+
 %% Code execution from here:
 
 % Use sync_kilosort_units to sync cortical and thalamic sorted units
