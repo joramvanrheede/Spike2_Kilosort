@@ -1,7 +1,7 @@
 %% Script to control the running of Kilosort2 on cortical and thalamic data
 
 % This is the only info that should need manual entry for each data set:
-data_dir        = 'C:\Spike_sorting\preprocessed_data\NB151 200127';
+data_dir        = 'C:\Spike_sorting\processed_data\NB151 200127';
 
 % The directory of the Spike2_Kilosort code repository
 repo_dir        = 'C:\Spike_sorting\GitHub\Spike2_Kilosort';

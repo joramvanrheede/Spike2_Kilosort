@@ -2,7 +2,7 @@
 
 session_ID        	= 'NB151 200127'; % This should be the experiment folder name
 
-data_folder         = 'C:\Spike_sorting\preprocessed_data';
+data_folder         = 'C:\Spike_sorting\processed_data';
 
 %% 
 kilosort_folder     = [data_folder filesep session_ID];
