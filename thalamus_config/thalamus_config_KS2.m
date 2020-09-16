@@ -1,4 +1,4 @@
-ops.chanMap             = 'CortexMap.mat';
+ops.chanMap             = 'ThalamusMap.mat';
 ops.NchanTOT            = 32;
 ops.trange              = [0 Inf];
 % ops.chanMap = 1:ops.Nchan; % treated as linear probe if no chanMap file
