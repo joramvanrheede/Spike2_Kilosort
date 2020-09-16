@@ -1,8 +1,7 @@
-% POSTPROCESS_KILOSORT:
-% Run this script after you have run preprocess_smr_files and after you have 
-% run Kilosort to link the sorted spikes to protocols and align them to trials.
 function postprocess_kilosort(kilosort_folder, sorted_data_save_name)
 % function postprocess_kilosort(kilosort_folder, sorted_data_save_name)
+% Run this function after you have run preprocess_smr_files and after you have 
+% run Kilosort to link the sorted spikes to protocols and align them to trials.
 
 % A bunch of hardcoded defaults:
 
@@ -18,7 +17,7 @@ thalamus_kilosort_folder  	= [kilosort_folder filesep 'thalamus'];
 thalamus_file_name         	= 'thalamus_binary.dat';
 
 % File name of sync_data saved file from preprocess_smr_files
-sync_file_name              = '/Users/Joram/Data/Sharott/Kilosort_binary/experiment_sync_data.mat';
+sync_file_name              = [kilosort_folder filesep 'experiment_sync_data.mat'];
 
 % Using an integer approximate sample rate for Kilosort but need to offset 
 % this by actual sample rate from smr file to get the timing right:
