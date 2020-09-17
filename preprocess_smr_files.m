@@ -1,11 +1,13 @@
 function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
 % preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
 
-% file names for Kilosort-compatible binary files and experiment sync data
 
+% Sub-directories for cortical and thalamic data within the processed data
+% folder for this session
 cortex_dir          = [target_dir filesep 'cortex'];
 thalamus_dir        = [target_dir filesep 'thalamus'];
 
+% Make these directories if they don't exist yet
 if ~isdir(cortex_dir)
     mkdir(cortex_dir)
 end
@@ -13,8 +15,11 @@ if ~isdir(thalamus_dir)
     mkdir(thalamus_dir)
 end
 
+% Set file names for the cortex and thalamic data files
 cortex_file_name    = [cortex_dir filesep 'cortex_binary.dat'];
 thalamus_file_name  = [thalamus_dir filesep 'thalamus_binary.dat'];
+
+% File names for the trial synchronisation info
 sync_data_file_name = [target_dir filesep 'experiment_sync_data.mat'];
 
 % Defaults   
@@ -99,8 +104,13 @@ if q_reload
         smr(i)      = smr_output;
     end
     
-    % Save the 'smr' variable so we don't need to spend time re-loading the smr files everytime
-    save(smr_data_save_name,'smr')
+    % Save the 'smr' variable so we don't need to spend time re-loading the 
+    % smr files everytime
+    % Removed for storage efficiency reasons; intermediate saving is only
+    % really required if errors are expected in the synchronisation step
+    % below (i.e. for debugging):
+    %
+    % save(smr_data_save_name,'smr')
 else
     % No reload requested - so variable either has to exist in memory or as a file.
     
@@ -316,7 +326,7 @@ for i = 1:length(smr)
             pulse561_length       	= 10; %
             
             laser561_onsets       	= smr(i).laser561.event_times;
-            laser561__burst_onsets 	= laser561_onsets;
+            laser561_burst_onsets 	= laser561_onsets;
 
             n_trials                = length(laser561_onsets);
             trial_starts            = laser561_onsets - pre_burst_time;
@@ -407,6 +417,7 @@ for i = 1:length(smr)
     thalamus_LFP_trace      = smr(i).cortex.LFP(thalamus_channel_map(:),:);
     LFP_time_stamps         = smr(i).cortex.LFP_time_stamps;
     
+    % Loop over all trials
     cortex_LFP      = [];
     thalamus_LFP    = [];
     cortex_spikes   = [];
@@ -415,10 +426,11 @@ for i = 1:length(smr)
         this_trial_start    = trial_starts(j);
         this_trial_end      = trial_ends(j);
         
+        % Use LFP time stamps and the trial start and end times to create a
+        % boolean for selecting the LFP data for this trial
         q_LFP               = (LFP_time_stamps >= this_trial_start) & (LFP_time_stamps <= this_trial_end);
         n_samps             = sum(q_LFP);
         
-
         % cortex_LFP and thalamus_LFP will be an n_channels * n_trials * n_samples matrix
         cortex_LFP(:,j,1:n_samps)   = cortex_LFP_trace(:,q_LFP);
         thalamus_LFP(:,j,1:n_samps) = thalamus_LFP_trace(:,q_LFP);
