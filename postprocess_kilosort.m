@@ -35,28 +35,28 @@ disp('Loading thalamic units & waveforms...')
 thalamic_kilosort_data      = sync_kilosort_units(thalamus_kilosort_folder, thalamus_file_name, sync_file_name, kilosort_sample_rate);
 
 % Use one of the outputs as the basis for the merged output
-synched_sorted_data      	= cortical_kilosort_data;
+sorted_data      	= cortical_kilosort_data;
 
 % Remove specific fields as they need replacing with 'thalamus_' and 'cortex_' prefix
-synched_sorted_data       	= rmfield(synched_sorted_data,{'spikes', 'unit_depths', 'unit_waveforms'});
+sorted_data       	= rmfield(sorted_data,{'spikes', 'unit_depths', 'unit_waveforms'});
 
 % distribute cortical data to appropriately named fields in shared / merged data structure
-[synched_sorted_data(:).cortex_spikes]              = deal(cortical_kilosort_data.spikes);
-[synched_sorted_data(:).cortex_unit_depths]         = deal(cortical_kilosort_data.unit_depths);
-[synched_sorted_data(:).cortex_unit_xpos]           = deal(cortical_kilosort_data.unit_xpos);
-[synched_sorted_data(:).cortex_unit_waveforms]      = deal(cortical_kilosort_data.unit_waveforms);
+[sorted_data(:).cortex_spikes]              = deal(cortical_kilosort_data.spikes);
+[sorted_data(:).cortex_unit_depths]         = deal(cortical_kilosort_data.unit_depths);
+[sorted_data(:).cortex_unit_xpos]           = deal(cortical_kilosort_data.unit_xpos);
+[sorted_data(:).cortex_unit_waveforms]      = deal(cortical_kilosort_data.unit_waveforms);
 
 % distribute thalamic data to appropriately named fields in shared / merged data structure
-[synched_sorted_data(:).thalamus_spikes]         	= deal(thalamic_kilosort_data.spikes);
-[synched_sorted_data(:).thalamus_unit_depths]    	= deal(thalamic_kilosort_data.unit_depths);
-[synched_sorted_data(:).thalamus_unit_xpos]         = deal(thalamic_kilosort_data.unit_xpos);
-[synched_sorted_data(:).thalamus_unit_waveforms] 	= deal(thalamic_kilosort_data.unit_waveforms);
+[sorted_data(:).thalamus_spikes]         	= deal(thalamic_kilosort_data.spikes);
+[sorted_data(:).thalamus_unit_depths]    	= deal(thalamic_kilosort_data.unit_depths);
+[sorted_data(:).thalamus_unit_xpos]         = deal(thalamic_kilosort_data.unit_xpos);
+[sorted_data(:).thalamus_unit_waveforms] 	= deal(thalamic_kilosort_data.unit_waveforms);
 
-for a = 1:length(synched_sorted_data)
-    synched_sorted_data(a).cortex_binned_spikes     = bin_spikes(synched_sorted_data(a).cortex_spikes,bin_size,synched_sorted_data(a).trial_length);
-    synched_sorted_data(a).thalamus_binned_spikes 	= bin_spikes(synched_sorted_data(a).thalamus_spikes,bin_size,synched_sorted_data(a).trial_length);
+for a = 1:length(sorted_data)
+    sorted_data(a).cortex_binned_spikes     = bin_spikes(sorted_data(a).cortex_spikes,bin_size,sorted_data(a).trial_length);
+    sorted_data(a).thalamus_binned_spikes 	= bin_spikes(sorted_data(a).thalamus_spikes,bin_size,sorted_data(a).trial_length);
 end
 
 % Save synched sorted data
 disp('Saving synched & sorted data...')
-save(sorted_data_save_name, 'synched_sorted_data')
+save(sorted_data_save_name, 'sorted_data')
