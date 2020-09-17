@@ -13,19 +13,19 @@ A set of MATLAB functions and scripts to:
 
 ## Step 1: Load Spike2 .smr, extract data & timings, and write Kilosort-compatible binary .dat file
 
-**preprocess_smr.m** will load a series of .smr files, save event data, and write a Kilosort-compatible concatenated binary .dat file. The script 'preprocess_script_local' provides an example of how to run the 'preprocess_smr.m' function.
+**preprocess_smr.m** will load a series of .smr files, save event data, and write a Kilosort-compatible concatenated binary .dat file. The script **preprocess_script_local.m** provides an example of how to run the **preprocess_smr.m** function.
 
 ## Step 2: Kilosort!
 
-the 'run_kilosort2.m' function will set up a Kilosort2 run. Use **cortex_config** and **thalamus_config** folders to configure Kilosort for the cortical and thalamic data, respectively. 'kilosort2_script.m' provides an example of how to run the 'run_kilosort2.m' function.
+The **run_kilosort2.m** function will set up a Kilosort2 run. Use **cortex_config** and **thalamus_config** folders to configure Kilosort for the cortical and thalamic data, respectively. **kilosort2_script.m** provides an example of how to run the **run_kilosort2.m** function.
 
 ## Step 3: Manual curation using Phy
-See https://github.com/cortex-lab/phy for details on how to install Phy and curate the output from Kilosort2
+See https://github.com/cortex-lab/phy for details on how to install Phy and curate the output from Kilosort2.
 
 
 ## Step 4: Postprocess - link Kilosorted spikes to protocol & event data
 
-**postprocess_kilosort.m** will take the saved experiment sync data from 'preprocess_smr.m' and the *curated* output from Kilosort2 and align the spikes for the clusters from Kilosort2 to the protocol, trial and event data. 'postprocess_script.m' provides an example of how to control the postprocess_kilosort.m function.
+**postprocess_kilosort.m** will take the saved experiment sync data from **preprocess_smr.m** and the *curated* output from Kilosort2, and align the spikes for the clusters from Kilosort2 to the protocol, trial and event data. **postprocess_script.m** provides an example of how to control the **postprocess_kilosort.m** function.
 
 
 ### Dependencies:
