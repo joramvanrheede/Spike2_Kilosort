@@ -3,22 +3,30 @@ Sharott lab toolkit for spike-sorting Spike2 .smr files using Kilosort
 
 A set of MATLAB functions and scripts to:
 
-1) Extract electrophysiology data, trial and stimulus timings from .smr files for an experimental session and write to a concatenated Kilosort-compatible binary data file
+1) Extract electrophysiology data, trial and stimulus timings from Spike2 .smr files for an experimental session and write to a concatenated Kilosort-compatible binary data file
 2) Run kilosort with settings for a 32-channel 4-shank 100-micron-spacing electrode array in Cortex and one in Thalamus (channel maps included to reflect the recording setup for a specific set of experiments in the Sharott lab)
 3) Align the spikes for individual clusters back to the timings of individual protocols, trials and events for further analysis
 
+### Warning - this repository was made for a specific recording configuration and analysis and there are some hardcoded default settings in the main functions, though they should be at the top of the code and clearly indicated.
+
+# How to run Kilosort on Spike2 .smr data using Spike2_Kilosort:
 
 ## Step 1: Load Spike2 .smr, extract data & timings, and write Kilosort-compatible binary .dat file
 
-**preprocess_smr.m** will load a series of .smr files, save event data, and write a Kilosort-compatible concatenated binary .dat file
+**preprocess_smr.m** will load a series of .smr files, save event data, and write a Kilosort-compatible concatenated binary .dat file. The script **preprocess_script_local.m** provides an example of how to run the **preprocess_smr.m** function. In addition, this process will extract threshold-detected multiunit spikes and LFP data resampled at 1000Hz, both aligned to trial onsets for all of the protocols in the experimental session.
 
 ## Step 2: Kilosort!
 
-Use **cortex_config** and **thalamus_config** folders to configure Kilosort for the cortical and thalamic data, respectively.
+The **run_kilosort2.m** function will set up a Kilosort2 run. Use **cortex_config** and **thalamus_config** folders to configure Kilosort for the cortical and thalamic data, respectively. **kilosort2_script.m** provides an example of how to run the **run_kilosort2.m** function.
 
-## Step 3: Link Kilosorted spikes to protocol & event data
+## Step 3: Manual curation using Phy
+See https://github.com/cortex-lab/phy for details on how to install Phy and curate the output from Kilosort2.
 
-**postprocess_kilosort.m** will take the saved event data from preprocess_smr and the *curated* output from Kilosort and align the spikes for the clusters from Kilosort to the protocol, trial and event data.
+
+## Step 4: Postprocess - link Kilosorted spikes to protocol & event data
+
+**postprocess_kilosort.m** will take the saved experiment sync data from **preprocess_smr.m** and the *curated* output from Kilosort2, and align the spikes for the clusters from Kilosort2 to the protocol, trial and event data. **postprocess_script.m** provides an example of how to control the **postprocess_kilosort.m** function.
+
 
 ### Dependencies:
 
