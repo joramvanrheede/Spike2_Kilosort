@@ -66,5 +66,5 @@ disp(['Finished Kilosort2 spike sorting of thalamic data in ' num2str(cortex_tim
 
 % Report total elapsed time
 total_time      = etime(clock, start_time);
-disp(['Total time for Kilosort2 spike sorting of cortical and thalamic data: ' num2str(total_time) ' seconds'])
+disp(['Total time for Kilosort2 spike sorting of cortical and thalamic data: ' num2str(total_time/60) ' minutes'])
 

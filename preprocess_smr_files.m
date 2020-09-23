@@ -155,6 +155,29 @@ for i = 1:length(smr)
             protocol_description    = 'baseline';
             trial_starts            = smr(i).cortex.time_stamps(1);
             trial_ends              = smr(i).cortex.time_stamps(end);
+        
+        case 'd' % 5 pulses 25Hz 50 repeats 2s 478
+            protocol_description    = '5 pulses 10Hz 50 repeats 2s 478';
+            
+            burst_diff_threshold    = 1; % gaps of longer than this amount in seconds are considered separate bursts
+            pre_burst_time          = 1; % how much time pre-burst to consider as part of trial
+            post_burst_time         = 1.41; % how much time post-burst onset to consider as part of trial
+            
+            pulse478_length       	= 0.005; % how long is the laser pulse
+            
+            laser478_onsets       	= smr(i).laser478.event_times;
+            
+            laser478_onset_diffs	= diff(laser478_onsets);
+            
+            is_478_burst_start    	= laser478_onset_diffs > burst_diff_threshold;
+            is_478_burst_start    	= [true; is_478_burst_start(:)];
+            
+            laser478_burst_onsets 	= laser478_onsets(is_478_burst_start);
+            
+            n_trials                = length(laser478_burst_onsets);
+            trial_starts            = laser478_burst_onsets - pre_burst_time;
+            trial_ends              = laser478_burst_onsets + post_burst_time;
+        
         case 'e' % 5 pulses 25Hz 50 repeats 2s 478
             protocol_description    = '5 pulses 25Hz 50 repeats 2s 478';
             
