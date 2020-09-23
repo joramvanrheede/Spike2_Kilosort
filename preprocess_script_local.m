@@ -35,5 +35,14 @@ kilosort_dir        = [processed_data_dir filesep session_ID];
 
 %% Code execution begins here
 
+% Keep track of time
+start_time          = clock;
+disp(['Starting preprocessing of experimental session ' session_ID '...' ])
+
 % This is the actual function that loads smr files, extracts trial info, etc.
 preprocess_smr_files(smr_data_folder, smr_file_list, kilosort_dir)
+
+% Report preprocessing time
+preprocess_time     = etime(clock, start_time);
+disp(['Finished preprocessing data from ' session_ID ' in ' num2str(preprocess_time/60) 'minutes.' ])
+
