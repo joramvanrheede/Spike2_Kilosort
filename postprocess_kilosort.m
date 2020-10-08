@@ -1,12 +1,12 @@
-function postprocess_kilosort(kilosort_folder, sorted_data_save_name)
-% function postprocess_kilosort(kilosort_folder, sorted_data_save_name)
+function postprocess_kilosort(kilosort_folder, sorted_data_folder, sorted_data_save_name)
+% function postprocess_kilosort(kilosort_folder, sorted_data_folder, sorted_data_save_name)
 % Run this function after you have run preprocess_smr_files and after you have 
 % run Kilosort to link the sorted spikes to protocols and align them to trials.
 
 % A bunch of hardcoded defaults:
 
 % Add kilosort folder path to sorted_data_save_name
-sorted_data_save_name       = [kilosort_folder filesep sorted_data_save_name];
+sorted_data_save_name       = [sorted_data_folder filesep sorted_data_save_name];
 
 % Kilosort folder for the cortical data, and binary data file name (.dat)
 cortex_kilosort_folder      = [kilosort_folder filesep 'cortex'];
@@ -57,6 +57,13 @@ for a = 1:length(sorted_data)
     sorted_data(a).thalamus_binned_spikes 	= bin_spikes(sorted_data(a).thalamus_spikes,bin_size,sorted_data(a).trial_length);
 end
 
-% Save synched sorted data
+% Save synched sorted data as individual experiments
 disp('Saving synched & sorted data...')
-save(sorted_data_save_name, 'sorted_data')
+for a = 1:length(sorted_data)
+    
+    protocol_save_name  = [sorted_data_save_name '_' num2str(a) '_' sorted_data(a).protocol_code];
+    
+    ephys_data          = sorted_data(a);
+    
+    save(protocol_save_name, 'ephys_data')
+end
