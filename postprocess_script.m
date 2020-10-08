@@ -6,16 +6,17 @@
 session_ID        	= 'NB151 200127'; 
 
 %% Defaults from here
-data_folder         = 'C:\Spike_sorting\processed_data';
+save_folder         = 'C:\Spike_sorting\synched_data';
+data_folder         = 'C:\Spike_sorting\curated_data';
 
 %% No further input required from here
 
 kilosort_folder     = [data_folder filesep session_ID];
 
 % Filename to save the synched & sorted data
-sorted_data_save_name       = [session_ID '_sorted.mat'];
+sorted_data_save_name       = [session_ID];
 
 % The actual function for postprocessing kilosort data, distributing the
 % unit spike times across the protocols and trials contained in
 % experiment_sync_data.mat (generated during the preprocessing stage)
-postprocess_kilosort(kilosort_folder, sorted_data_save_name)
+postprocess_kilosort(kilosort_folder, save_folder, sorted_data_save_name)
