@@ -4,11 +4,11 @@
 %% Variables that need changing for each new experimental session:
 
 % The folder containing the SMR data files to be concatenated and sorted
-smr_data_folder     = '\\MARS\Sharott_Lab\temp_share - contents deleted periodically\probe recording data for joram\NB151 200127';
+smr_data_folder     = '\\MARS\Sharott_Lab\users\naomi\recording data\NB116\D1';
 
 % This will become the name of the folder that the preprocessed and sorted 
 % data will end up in:
-session_ID          = 'NB151 200127';
+session_ID          = 'NB116_020719';
 
 % A cell array of strings containing the filenames of the SMR files for the
 % experimental session.

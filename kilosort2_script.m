@@ -2,12 +2,6 @@
 
 %% This is the only info that should need manual entry for each data set:
 
-% The session identifier which was used in the preprocessing step (this
-% needs to be the folder that contains 'experiment_sync_data' as well as 
-% the cortex and thalamus folders with the kilosort-compatible binary data 
-% files):
-session_ID              = 'NB151 200127';
-
 
 %% These should not need to be edited unless the default folders need changing:
 
