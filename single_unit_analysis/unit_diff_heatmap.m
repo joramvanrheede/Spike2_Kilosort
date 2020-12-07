@@ -39,6 +39,7 @@ elseif length(bin_spec) > 1
     bin_edges  	= bin_spec;
 end
 
+
 if nargin < 3
     ref_win     = [min(spikes(:)) max(spikes(:))];
 end
@@ -55,6 +56,7 @@ diff_heatmap(65:128,3) 	= 1-linspace(0,1,64);
 smooth_win              = 7;
 
 %%
+bin_size        = mean(diff(bin_spec));
 
 n_bins          = length(bin_edges) - 1;
 n_units         = size(spikes,1);
@@ -64,16 +66,15 @@ for a = 1:n_units
     count_data(a,:) = histcounts(spikes(a,:,:),bin_edges);
 end
 
+%% Convert to rate in Hz
+count_data      = count_data / bin_size; 
+
 ref_rates       = spike_rate_by_channel(spikes,ref_win);
 
 diff_counts     = bsxfun(@minus,count_data,ref_rates); 
 
-
 diff_counts     = smoothdata(diff_counts,2,'movmedian',smooth_win);
 
-% diff_counts     = bsxfun(@rdivide,count_data,ref_rates); 
-
-% log_diff_counts = log2(diff_counts);
 
 imagesc(diff_counts)
 colormap(diff_heatmap)
