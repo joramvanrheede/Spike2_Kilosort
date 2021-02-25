@@ -78,7 +78,8 @@ for b = 1:length(groupids)
     xvals       = xvals + xshift;
     
     % Use plot function to plot the points
-    plothandle  = plot(xvals,thiscol,'ko','MarkerSize',8,'MarkerEdgeColor',colours(b,:),'MarkerFaceColor',colours(b,:));
+    plothandle  = plot(xvals,thiscol,'ko','MarkerSize',8,'MarkerEdgeColor',[0 0 0],'MarkerFaceColor',colours(b,:));
+%     plothandle  = plot(xvals,thiscol,'ko','MarkerSize',8,'MarkerEdgeColor',colours(b,:),'MarkerFaceColor',colours(b,:));
     
     hold on
     
