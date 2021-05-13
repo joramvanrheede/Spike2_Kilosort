@@ -13,7 +13,7 @@ A set of MATLAB functions and scripts to:
 
 ## Step 1: Load Spike2 .smr, extract data & timings, and write Kilosort-compatible binary .dat file
 
-**preprocess_smr.m** will load a series of .smr files, save event data, and write a Kilosort-compatible concatenated binary .dat file. The script **preprocess_script_local.m** provides an example of how to run the **preprocess_smr.m** function. In addition, this process will extract threshold-detected multiunit spikes and LFP data resampled at 1000Hz, both aligned to trial onsets for all of the protocols in the experimental session.
+**preprocess_smr_files.m** will load a series of .smr files, save event data, and write a Kilosort-compatible concatenated binary .dat file. The script **preprocess_script_local.m** provides an example of how to run the **preprocess_smr_files.m** function. In addition, this process will extract threshold-detected multiunit spikes and LFP data resampled at 1000Hz, both aligned to trial onsets for all of the protocols in the experimental session.
 
 ## Step 2: Kilosort!
 
