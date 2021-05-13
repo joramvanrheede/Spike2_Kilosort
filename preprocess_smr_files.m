@@ -1,9 +1,9 @@
-function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir, target_structure)
+function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
 % preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
-
-if nargin < 4
-    target_structure = 'all';
-end
+% 
+% Will preprocess Spike2 .smr files 
+% 
+% 
 
 % Sub-directories for cortical and thalamic data within the processed data
 % folder for this session
