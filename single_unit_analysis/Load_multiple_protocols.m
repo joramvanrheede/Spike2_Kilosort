@@ -6,7 +6,7 @@
 
 % The folder that has the data folders for all sessions to be used in this
 % analysis
-target_folder       = '\\MARS\Sharott_Lab\users\naomi\recording data_processed';
+target_folder       = '\\MARS\Sharott_Lab\users\naomi\recording data_processed\opsins';
 
 % Keypress codes for the relevant protocols
 ChR2_protocol_key       = 'p';

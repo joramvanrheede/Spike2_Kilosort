@@ -2,10 +2,11 @@
 
 %% This is the only info that should need manual entry for each data set:
 
+session_ID              = 'NB151_200127_C900_TXXXX';
 
 %% These should not need to be edited unless the default folders need changing:
 
-processed_data_dir      = 'C:\Spike_sorting\processed_data';
+processed_data_dir      = 'C:\Spike_sorting\Naomi\preprocessed';
 
 % The directory of the Spike2_Kilosort code repository
 repo_dir                = 'C:\Spike_sorting\GitHub\Spike2_Kilosort';

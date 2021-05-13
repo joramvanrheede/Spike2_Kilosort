@@ -3,7 +3,7 @@
 % 
 
 % 
-smr_data_folder     = '/Users/Joram/Data/Sharott/probe recording data for joram/NB151 200127';
+smr_data_folder     = 'Z:\temp_share - contents deleted periodically\probe recording data for joram\NB151 200127';
 
 % A cell with the filenames of the SMR files to be added.
 % IMPORTANT - these files need to be in the order they were recorded in, as they will be concatenated in this order
@@ -19,7 +19,7 @@ smr_file_list       = { 'NB151 200127 baseline_start.smr' ...
                         };
 
 % The kilosort directory for this data set
-kilosort_dir        = '/Users/Joram/Data/Sharott/Kilosort';
+kilosort_dir        = 'C:\Spike_sorting\Naomi\preprocessed';
 
 % This is the actual function that loads smr files, extracts trial info, etc.
 preprocess_smr_files(smr_data_folder, smr_file_list, kilosort_dir)

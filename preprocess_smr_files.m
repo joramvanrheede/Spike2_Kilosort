@@ -1,6 +1,9 @@
-function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
+function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir, target_structure)
 % preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
 
+if nargin < 4
+    target_structure = 'all';
+end
 
 % Sub-directories for cortical and thalamic data within the processed data
 % folder for this session
@@ -433,11 +436,22 @@ for i = 1:length(smr)
     %% Distribute LFP traces and spikes across trials
     
     % apply channelmap here to re-order channels:
-    cortex_all_spikes     	= smr(i).cortex.spikes(cortex_channel_map(:),:);
-    thalamus_all_spikes   	= smr(i).thalamus.spikes(cortex_channel_map(:),:);
+    if ~isempty(smr(i).cortex.spikes)
+        cortex_all_spikes     	= smr(i).cortex.spikes(cortex_channel_map(:),:);
+        cortex_LFP_trace        = smr(i).cortex.LFP(cortex_channel_map(:),:);
+    else
+        cortex_all_spikes       = [];
+        cortex_LFP_trace        = [];
+    end
     
-    cortex_LFP_trace        = smr(i).cortex.LFP(cortex_channel_map(:),:);
-    thalamus_LFP_trace      = smr(i).cortex.LFP(thalamus_channel_map(:),:);
+    if ~isempty(smr(i).thalamus.spikes)
+        thalamus_all_spikes   	= smr(i).thalamus.spikes(thalamus_channel_map(:),:);
+        thalamus_LFP_trace      = smr(i).cortex.LFP(thalamus_channel_map(:),:);
+    else
+        thalamus_all_spikes     = [];
+        thalamus_LFP_trace      = [];
+    end
+    
     LFP_time_stamps         = smr(i).cortex.LFP_time_stamps;
     
     % Loop over all trials
@@ -455,18 +469,23 @@ for i = 1:length(smr)
         n_samps             = sum(q_LFP);
         
         % cortex_LFP and thalamus_LFP will be an n_channels * n_trials * n_samples matrix
-        cortex_LFP(:,j,1:n_samps)   = cortex_LFP_trace(:,q_LFP);
-        thalamus_LFP(:,j,1:n_samps) = thalamus_LFP_trace(:,q_LFP);
+        if ~isempty(cortex_LFP_trace)
+            cortex_LFP(:,j,1:n_samps)   = cortex_LFP_trace(:,q_LFP);
+        end
+        
+        if ~isempty(thalamus_LFP_trace)
+            thalamus_LFP(:,j,1:n_samps) = thalamus_LFP_trace(:,q_LFP);
+        end
         
         % Distribute cortical spikes over trials
-        for k = 1:length(cortex_channel_map(:))
+        for k = 1:size(cortex_all_spikes,1)
             chan_trial_spikes       = cortex_all_spikes(k,:);
             q_trial_spikes          = (chan_trial_spikes >= this_trial_start) & (chan_trial_spikes <= this_trial_end);
             cortex_spikes(k,j,1:sum(q_trial_spikes))    = chan_trial_spikes(q_trial_spikes) - this_trial_start;
         end
         
         % Distribute thalamic spikes over trials
-        for k = 1:length(thalamus_channel_map(:))
+        for k = 1:size(thalamus_all_spikes,1)
             chan_trial_spikes       = thalamus_all_spikes(k,:);
             q_trial_spikes          = (chan_trial_spikes >= this_trial_start) & (chan_trial_spikes <= this_trial_end);
             thalamus_spikes(k,j,1:sum(q_trial_spikes))  = chan_trial_spikes(q_trial_spikes) - this_trial_start;

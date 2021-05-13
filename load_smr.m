@@ -136,8 +136,12 @@ for a = 1:length(smr_file_data)
 end
 
 % Select the target channels from the headstages, discard unnecessary channels
-chan_data_A     = chan_data_A(target_chans_A,:);
-chan_data_B     = chan_data_B(target_chans_B,:);
+if ~isempty(chan_data_A)
+    chan_data_A     = chan_data_A(target_chans_A,:);
+end
+if ~isempty(chan_data_B)
+    chan_data_B     = chan_data_B(target_chans_B,:);
+end
 
 % If common average referencing is required:
 if do_CAR
@@ -293,9 +297,16 @@ end
 
 % Unequal numbers of spikes mean that spikes_A and spikes_B are padded with
 % 0s, change these to NaNs instead so we don't count them as spike times
-spikes_A(spikes_A == 0) = NaN;
-spikes_B(spikes_B == 0) = NaN;
-
+if exist('spikes_A','var')
+    spikes_A(spikes_A == 0) = NaN;
+else
+    spikes_A = [];
+end
+if exist('spikes_B','var')
+    spikes_B(spikes_B == 0) = NaN;
+else
+    spikes_B = [];
+end
 
 %% LFP: Filter and resample data for storing LFP traces
 
