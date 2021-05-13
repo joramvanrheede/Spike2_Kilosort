@@ -9,6 +9,13 @@ function preprocess_smr_files(smr_data_folder, smr_file_list, target_folder)
 % output folders for thalamic and cortical concatenated files (as they
 % should be sorted separately by Kilosort.
 % 
+% Will create the output folder (TARGET_FOLDER) if it does not exist yet,
+% and create subfolders 'cortex' and 'thalamus'. The main folder will
+% contain a saved matlab data structure called 'experiment_sync_data.mat';
+% This will contain information about sweep and trigger times from the
+% spike2 files. The cortex and thalamus folders will contain the
+% concatenated ephys data ready for Kilosort.
+% 
 % WARNING: This function contains hard-coded channel maps only applicable
 % to a specific setup; changes of probes or recording configuration will
 % require these to be modified.
@@ -16,8 +23,10 @@ function preprocess_smr_files(smr_data_folder, smr_file_list, target_folder)
 % INPUTS:
 % SMR_DATA_FOLDER: The full folder path to the folder containing the .smr
 % files.
+%
 % SMR_FILE_LIST: The list of .smr file names to be processed, IN RECORDING
 % ORDER. The .smr files will be processed and concatenated in this order.
+%
 % TARGET_FOLDER: The full folder path to the folder in which the
 % preprocessed data will be saved - sub-folders 'cortex' and 'thalamus'
 % will be created.
@@ -47,7 +56,7 @@ sync_data_file_name = [target_folder filesep 'experiment_sync_data.mat'];
 do_CAR              = true;
 q_reload            = true;
 
-% file names for intermediate smr data file and experiment sync data
+% file names for intermediate smr data file and experiment sync data (DEBUG ONLY)
 smr_data_save_name  = [target_folder filesep 'saved_smr_data'];
 
 spike_bin_width     = 0.01; % 10ms spike bin width
