@@ -1,14 +1,28 @@
-function preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
-% preprocess_smr_files(smr_data_folder, smr_file_list, target_dir)
+function preprocess_smr_files(smr_data_folder, smr_file_list, target_folder)
+% preprocess_smr_files(smr_data_folder, smr_file_list, target_folder)
 % 
-% Will preprocess Spike2 .smr files 
+% Will read multiple spike2 smr files, extract event data, and concatenate 
+% the electrophysiological data into a single binary file that is
+% compatible with Kilosort.
 % 
+% The script expects thalamic and cortical data, and will create separate
+% output folders for thalamic and cortical concatenated files (as they
+% should be sorted separately by Kilosort.
 % 
+% INPUTS:
+% SMR_DATA_FOLDER: The full folder path to the folder containing the .smr
+% files.
+% SMR_FILE_LIST: The list of .smr file names to be processed, IN RECORDING
+% ORDER. The .smr files will be processed and concatenated in this order.
+% TARGET_FOLDER: The full folder path to the folder in which the
+% preprocessed data will be saved - sub-folders 'cortex' and 'thalamus'
+% will be created.
+%
 
 % Sub-directories for cortical and thalamic data within the processed data
 % folder for this session
-cortex_dir          = [target_dir filesep 'cortex'];
-thalamus_dir        = [target_dir filesep 'thalamus'];
+cortex_dir          = [target_folder filesep 'cortex'];
+thalamus_dir        = [target_folder filesep 'thalamus'];
 
 % Make these directories if they don't exist yet
 if ~isdir(cortex_dir)
@@ -23,14 +37,14 @@ cortex_file_name    = [cortex_dir filesep 'cortex_binary.dat'];
 thalamus_file_name  = [thalamus_dir filesep 'thalamus_binary.dat'];
 
 % File names for the trial synchronisation info
-sync_data_file_name = [target_dir filesep 'experiment_sync_data.mat'];
+sync_data_file_name = [target_folder filesep 'experiment_sync_data.mat'];
 
 % Defaults   
 do_CAR              = true;
 q_reload            = true;
 
 % file names for intermediate smr data file and experiment sync data
-smr_data_save_name  = [target_dir filesep 'saved_smr_data'];
+smr_data_save_name  = [target_folder filesep 'saved_smr_data'];
 
 spike_bin_width     = 0.01; % 10ms spike bin width
 
@@ -120,9 +134,9 @@ else
     % If variable is not in memory already, try to load it using smr_data_save_name 
     if ~exist('smr','var')
         try
-            load([target_dir filesep smr_data_save_name])
+            load([target_folder filesep smr_data_save_name])
         catch
-            error(['Saved SMR data file:' target_dir filesep smr_data_save_name ' not found'])
+            error(['Saved SMR data file:' target_folder filesep smr_data_save_name ' not found'])
         end
     end
 end
