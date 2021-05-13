@@ -1,4 +1,4 @@
-% Extract firing rates across protocols
+% Extract synchrony cross-correlation measure across protocols
 
 % Window for assessing baseline firing rate
 baseline_win        = [0 4];
@@ -27,8 +27,25 @@ min_thal_resp_units = 3; % minimum number of significantly responsive units in t
 
 % /!\ OR BOTH! /!\
 
-%% 
+%% Some cross-correlation settings - probably leave on these defaults
 
+% How many times to shuffle trials for the shuffled data:
+n_shuffles          = 10;
+
+% bin size of binned spike data - DO NOT CHANGE
+bin_size            = 0.01;
+
+% maximum lag for cross-correlation
+xcorr_bin_lag       = 1;
+
+% time vector for the bins
+bin_vec             = 0:bin_size:(1500*bin_size);
+bin_vec             = bin_vec(1:end-1);
+
+% Selection boolean to select appropriate sections of binned spike data
+baseline_bins       = bin_vec >= baseline_win(1) & bin_vec < baseline_win(2);
+target_bins         = bin_vec >= target_win(1) & bin_vec < target_win(2);
+    
 unit_results_table  = [];
 for i = 1:length(matched_ChR2)
     
@@ -36,6 +53,10 @@ for i = 1:length(matched_ChR2)
     ChR2_cortex_spikes          = matched_ChR2(i).cortex_spikes;
     ArchT_cortex_spikes         = matched_ArchT(i).cortex_spikes;
     ChR2_ArchT_cortex_spikes    = matched_ChR2_ArchT(i).cortex_spikes;
+    
+    ChR2_cortex_binned_spikes          = matched_ChR2(i).cortex_binned_spikes;
+    ArchT_cortex_binned_spikes         = matched_ArchT(i).cortex_binned_spikes;
+    ChR2_ArchT_cortex_binned_spikes    = matched_ChR2_ArchT(i).cortex_binned_spikes;
     
     ChR2_thalamus_spikes       	= matched_ChR2(i).thalamus_spikes;
     ArchT_thalamus_spikes      	= matched_ArchT(i).thalamus_spikes;
@@ -61,9 +82,6 @@ for i = 1:length(matched_ChR2)
     else
         q_thal_resp     = false;
     end
-    
-    ChR2_n_thalamus_up      = sum(ChR2_thalamus_unit_h == 1);
-    ChR2_n_thalamus_down    = sum(ChR2_thalamus_unit_h == -1);
     
     if ~isnan(ChR2_thalamus_unit_h)
         q_thal_unit_resp    = sum(ChR2_thalamus_unit_h == 1) >= min_thal_resp_units;
@@ -102,12 +120,15 @@ for i = 1:length(matched_ChR2)
     q_all_rate                          = q_ChR2_rate & q_ArchT_rate & q_ChR2_ArchT_rate;
     
     if ~isempty(ChR2_cortex_spikes)
+        ChR2_cortex_binned_spikes           = ChR2_cortex_binned_spikes(q_all_rate,:,:);
         ChR2_cortex_spikes                  = ChR2_cortex_spikes(q_all_rate,:,:);
     end
     if ~isempty(ArchT_cortex_spikes)
+        ArchT_cortex_binned_spikes       	= ArchT_cortex_binned_spikes(q_all_rate,:,:);
         ArchT_cortex_spikes                 = ArchT_cortex_spikes(q_all_rate,:,:);
     end
     if ~isempty(ChR2_ArchT_cortex_spikes)
+        ChR2_ArchT_cortex_binned_spikes   	= ChR2_ArchT_cortex_binned_spikes(q_all_rate,:,:);
         ChR2_ArchT_cortex_spikes          	= ChR2_ArchT_cortex_spikes(q_all_rate,:,:);
     end
     
@@ -138,8 +159,8 @@ for i = 1:length(matched_ChR2)
     
     unique_unit_ids     = [];
     for j = 1:n_units
-        unit_id_str         = num2str(unit_nrs(j),'%02.f');
-        unique_unit_ids{j}  = [session_id '_' unit_id_str];
+        unit_id_str     = num2str(unit_nrs(j),'%02.f');
+        unique_unit_ids{j} = [session_id '_' unit_id_str];
     end
     
     % pre-making this this will be useful for missing data
@@ -148,53 +169,58 @@ for i = 1:length(matched_ChR2)
     %% ChR2-only data
     
     if ~isempty(ChR2_cortex_spikes)
-        ChR2_baseline_rates     = spike_rate_by_channel(ChR2_cortex_spikes,baseline_win);
-        ChR2_target_rates       = spike_rate_by_channel(ChR2_cortex_spikes,target_win);
-        ChR2_trial_rates        = spike_rate_by_channel(ChR2_cortex_spikes,full_trial_win);
-        [ChR2_delta_rates, ChR2_p_vals, ChR2_h_up_down] = compare_firing_rates(ChR2_cortex_spikes, baseline_win, target_win);
+        ChR2_baseline_coupling            = unit_cross_corr(ChR2_cortex_binned_spikes(:,:,baseline_bins), xcorr_bin_lag);
+        ChR2_target_coupling              = unit_cross_corr(ChR2_cortex_binned_spikes(:,:,target_bins), xcorr_bin_lag);
         
+        ChR2_shuffled_baseline_coupling  	= shuffled_unit_corr(ChR2_cortex_binned_spikes(:,:,baseline_bins), xcorr_bin_lag, n_shuffles);
+        ChR2_shuffled_target_coupling    	= shuffled_unit_corr(ChR2_cortex_binned_spikes(:,:,target_bins), xcorr_bin_lag, n_shuffles);
+        
+        ChR2_trial_rates                  = spike_rate_by_channel(ChR2_cortex_spikes,full_trial_win);
     else
-        ChR2_baseline_rates     = nan_array;
-        ChR2_target_rates     	= nan_array;
-        ChR2_trial_rates        = nan_array;
-        ChR2_delta_rates        = nan_array;
-        ChR2_p_vals             = nan_array;
-        ChR2_h_up_down          = nan_array;
+        ChR2_baseline_coupling            = nan_array;
+        ChR2_target_coupling              = nan_array;
+        ChR2_shuffled_baseline_coupling   = nan_array;
+        ChR2_shuffled_target_coupling     = nan_array;
+        ChR2_trial_rates                  = nan_array;
     end
     
     %% ChR2-only data
     
     if ~isempty(ArchT_cortex_spikes)
-        ArchT_baseline_rates     = spike_rate_by_channel(ArchT_cortex_spikes,baseline_win);
-        ArchT_target_rates       = spike_rate_by_channel(ArchT_cortex_spikes,target_win);
-        ArchT_trial_rates        = spike_rate_by_channel(ArchT_cortex_spikes,full_trial_win);
-        [ArchT_delta_rates, ArchT_p_vals, ArchT_h_up_down] = compare_firing_rates(ArchT_cortex_spikes, baseline_win, target_win);
+        ArchT_baseline_coupling            = unit_cross_corr(ArchT_cortex_binned_spikes(:,:,baseline_bins), xcorr_bin_lag);
+        ArchT_target_coupling              = unit_cross_corr(ArchT_cortex_binned_spikes(:,:,target_bins), xcorr_bin_lag);
         
+        ArchT_shuffled_baseline_coupling  	= shuffled_unit_corr(ArchT_cortex_binned_spikes(:,:,baseline_bins), xcorr_bin_lag, n_shuffles);
+        ArchT_shuffled_target_coupling    	= shuffled_unit_corr(ArchT_cortex_binned_spikes(:,:,target_bins), xcorr_bin_lag, n_shuffles);
+        
+        ArchT_trial_rates                  = spike_rate_by_channel(ArchT_cortex_spikes,full_trial_win);
     else
-        ArchT_baseline_rates     = nan_array;
-        ArchT_target_rates          = nan_array;
-        ArchT_trial_rates        = nan_array;
-        ArchT_delta_rates        = nan_array;
-        ArchT_p_vals             = nan_array;
-        ArchT_h_up_down          = nan_array;
+        ArchT_baseline_coupling            = nan_array;
+        ArchT_target_coupling              = nan_array;
+        ArchT_shuffled_baseline_coupling   = nan_array;
+        ArchT_shuffled_target_coupling     = nan_array;
+        ArchT_trial_rates                  = nan_array;
     end
     
     %% ChR2_ArchT-only data
     
     if ~isempty(ChR2_ArchT_cortex_spikes)
-        ChR2_ArchT_baseline_rates     = spike_rate_by_channel(ChR2_ArchT_cortex_spikes,baseline_win);
-        ChR2_ArchT_target_rates       = spike_rate_by_channel(ChR2_ArchT_cortex_spikes,target_win);
-        ChR2_ArchT_trial_rates        = spike_rate_by_channel(ChR2_ArchT_cortex_spikes,full_trial_win);
-        [ChR2_ArchT_delta_rates, ChR2_ArchT_p_vals, ChR2_ArchT_h_up_down] = compare_firing_rates(ChR2_ArchT_cortex_spikes, baseline_win, target_win);
+        ChR2_ArchT_baseline_coupling            = unit_cross_corr(ChR2_ArchT_cortex_binned_spikes(:,:,baseline_bins), xcorr_bin_lag);
+        ChR2_ArchT_target_coupling              = unit_cross_corr(ChR2_ArchT_cortex_binned_spikes(:,:,target_bins), xcorr_bin_lag);
         
+        ChR2_ArchT_shuffled_baseline_coupling  	= shuffled_unit_corr(ChR2_ArchT_cortex_binned_spikes(:,:,baseline_bins), xcorr_bin_lag, n_shuffles);
+        ChR2_ArchT_shuffled_target_coupling    	= shuffled_unit_corr(ChR2_ArchT_cortex_binned_spikes(:,:,target_bins), xcorr_bin_lag, n_shuffles);
+        
+        ChR2_ArchT_trial_rates                  = spike_rate_by_channel(ChR2_ArchT_cortex_spikes,full_trial_win);
     else
-        ChR2_ArchT_baseline_rates     = nan_array;
-        ChR2_ArchT_target_rates     	= nan_array;
-        ChR2_ArchT_trial_rates        = nan_array;
-        ChR2_ArchT_delta_rates        = nan_array;
-        ChR2_ArchT_p_vals             = nan_array;
-        ChR2_ArchT_h_up_down          = nan_array;
+        ChR2_ArchT_baseline_coupling            = nan_array;
+        ChR2_ArchT_target_coupling              = nan_array;
+        ChR2_ArchT_shuffled_baseline_coupling   = nan_array;
+        ChR2_ArchT_shuffled_target_coupling     = nan_array;
+        ChR2_ArchT_trial_rates                  = nan_array;
     end
+    
+
     
     %% 
     ChR2_thalamus_delta_rate        = ChR2_thalamus_delta_rate * ones(n_units,1);
@@ -206,16 +232,16 @@ for i = 1:length(matched_ChR2)
    	ChR2_ArchT_thalamus_delta_rate 	= ChR2_ArchT_thalamus_delta_rate * ones(n_units,1);
    	ChR2_ArchT_thalamus_p          	= ChR2_ArchT_thalamus_p * ones(n_units,1);
     
-
+    
     %% Make a table of the results for this session
-    this_results_table  = table(repmat({session_id}, size(unit_depths)), unique_unit_ids(:), unit_depths, ...
-                                ChR2_thalamus_delta_rate, ChR2_thalamus_p, repmat(ChR2_n_thalamus_up,size(unit_depths)), repmat(ChR2_n_thalamus_down,size(unit_depths)), ChR2_baseline_rates, ChR2_target_rates, ChR2_trial_rates, ChR2_delta_rates, ChR2_p_vals, ChR2_h_up_down, ...
-                                ArchT_thalamus_delta_rate, ArchT_thalamus_p, ArchT_baseline_rates, ArchT_target_rates, ArchT_trial_rates, ArchT_delta_rates, ArchT_p_vals, ArchT_h_up_down, ...
-                              	ChR2_ArchT_thalamus_delta_rate, ChR2_ArchT_thalamus_p, ChR2_ArchT_baseline_rates, ChR2_ArchT_target_rates, ChR2_ArchT_trial_rates, ChR2_ArchT_delta_rates, ChR2_ArchT_p_vals, ChR2_ArchT_h_up_down, ...
-                              	'VariableNames',{'session_id','unit_id', 'unit_depth', ...
-                               	'ChR2_thal_delta', 'ChR2_thal_p','ChR2_thal_n_up','ChR2_thal_n_down','ChR2_baseline','ChR2_target','ChR2_trial','ChR2_delta','ChR2_p','ChR2_h_up_down', ...
-                               	'ArchT_thal_delta', 'ArchT_thal_p','ArchT_baseline','ArchT_target','ArchT_trial','ArchT_delta','ArchT_p','ArchT_h_up_down', ...
-                               	'ChR2_ArchT_thal_delta', 'ChR2_ArchT_thal_p','ChR2_ArchT_baseline','ChR2_ArchT_target','ChR2_ArchT_trial','ChR2_ArchT_delta','ChR2_ArchT_p','ChR2_ArchT_h_up_down'});
+    this_results_table  = table(unique_unit_ids(:), unit_depths, repmat(n_units,size(unit_depths)), ...
+                                ChR2_thalamus_delta_rate, ChR2_thalamus_p, ChR2_baseline_coupling(:), ChR2_target_coupling(:), ChR2_trial_rates, ChR2_shuffled_baseline_coupling(:), ChR2_shuffled_target_coupling(:), ...
+                                ArchT_thalamus_delta_rate, ArchT_thalamus_p, ArchT_baseline_coupling(:), ArchT_target_coupling(:), ArchT_trial_rates, ArchT_shuffled_baseline_coupling(:), ArchT_shuffled_target_coupling(:), ...
+                              	ChR2_ArchT_thalamus_delta_rate, ChR2_ArchT_thalamus_p, ChR2_ArchT_baseline_coupling(:), ChR2_ArchT_target_coupling(:), ChR2_ArchT_trial_rates, ChR2_ArchT_shuffled_baseline_coupling(:), ChR2_ArchT_shuffled_target_coupling(:), ...
+                              	'VariableNames',{'unit_id', 'unit_depth','n_cortical_units' ...
+                               	'ChR2_thal_delta', 'ChR2_thal_p','ChR2_baseline_coupling','ChR2_target_coupling','ChR2_trial_rate','ChR2_shuffled_baseline_coupling','ChR2_shuffled_target_coupling', ...
+                               	'ArchT_thal_delta', 'ArchT_thal_p','ArchT_baseline_coupling','ArchT_target_coupling','ArchT_trial_rate','ArchT_shuffled_baseline_coupling','ArchT_shuffled_target_coupling', ...
+                               	'ChR2_ArchT_thal_delta', 'ChR2_ArchT_thal_p','ChR2_ArchT_baseline_coupling','ChR2_ArchT_target_coupling','ChR2_ArchT_trial_rate','ChR2_ArchT_shuffled_baseline_coupling','ChR2_ArchT_shuffled_target_coupling'});
     
   	% Add the results for this session to the big unit_results_table:
 	unit_results_table  = [unit_results_table; this_results_table];
