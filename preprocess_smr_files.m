@@ -9,6 +9,10 @@ function preprocess_smr_files(smr_data_folder, smr_file_list, target_folder)
 % output folders for thalamic and cortical concatenated files (as they
 % should be sorted separately by Kilosort.
 % 
+% WARNING: This function contains hard-coded channel maps only applicable
+% to a specific setup; changes of probes or recording configuration will
+% require these to be modified.
+% 
 % INPUTS:
 % SMR_DATA_FOLDER: The full folder path to the folder containing the .smr
 % files.
